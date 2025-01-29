@@ -305,10 +305,10 @@ import os
 @csrf_exempt
 def image_upload(request):
     if request.method == "POST":
-        if "image" not in request.FILES:
+        if "file" not in request.FILES:
             return JsonResponse({"error": "No image file uploaded"}, status=400)
 
-        uploaded_file = request.FILES["image"]
+        uploaded_file = request.FILES["file"]
         
         # Validate the file is an image
         if not uploaded_file.content_type.startswith('image'):
