@@ -8,7 +8,9 @@ import { setCookie } from "cookies-next";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"; // Import shadcn Popover components
 import { Button } from "./ui/button"; // Import shadcn Button
 import { useUserRole } from "@/hooks/useUserRole";
+
 import { ShoppingCartIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const router = useRouter();
