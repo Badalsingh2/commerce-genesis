@@ -100,6 +100,7 @@ def get_user_by_id(request, user_id):
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
     
+@csrf_exempt   
 def get_all_products(request):
     products = Product.objects.all()
 
