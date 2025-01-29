@@ -1,3 +1,7 @@
+//track delivery-- tracking
+//dashboard
+//  - loyalty points
+//    - data analytics
 import { auth, currentUser } from '@clerk/nextjs/server'
 
 export default async function Page() {
@@ -13,5 +17,5 @@ export default async function Page() {
   const user = await currentUser()
 
   // Use `user` to render user details or create UI elements
-  return <div>Welcome, {user?.id}!</div>
+  return <div>Welcome, {user.firstName}!</div>
 }

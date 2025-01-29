@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
@@ -27,6 +28,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <body className={inter.className}>{children}</body>
+          <Toaster />
         </ThemeProvider>
       </html>
     </ClerkProvider>
