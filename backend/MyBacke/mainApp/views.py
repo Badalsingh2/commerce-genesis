@@ -110,11 +110,11 @@ def cart_detail(request, user_id):
     user = get_object_or_404(User, id=user_id)
     cart = Cart.objects.filter(user=user).first()  # Get the user's cart
     items = cart.items.all() if cart else []
-    
+    print(items)
     cart_data = [
         {
             "productId": item.product.id,
-            "productName": item.product.name,
+            "productName": item.product.title,
             "quantity": item.quantity,
             "totalPrice": item.total_price
         }
@@ -207,3 +207,36 @@ def add_product(request):
 
     # If the request method is not POST, return an error
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import User, Order
+
+def view_orders(request, user_id):
+    user = get_object_or_404(User, id=user_id)  # Get the user by their ID
+    orders = Order.objects.filter(user=user)  # Get all orders placed by the user
+
+    if not orders:
+        return JsonResponse({"error": "No orders found for this user"}, status=404)
+
+    # Prepare the order data to send in the response
+    order_data = [
+        {
+            "orderId": order.id,
+            "totalPrice": order.total_price,
+            "date": order.created_at.strftime("%Y-%m-%d %H:%M:%S"),  # Format the date
+            "items": [
+                {
+                    "productId": item.product.id,
+                    "productName": item.product.title,
+                    "quantity": item.quantity,
+                    "price": item.price
+                }
+                for item in order.items.all()  # Get order items
+            ]
+        }
+        for order in orders
+    ]
+
+    return JsonResponse({"orders": order_data})
