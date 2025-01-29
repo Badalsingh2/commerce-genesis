@@ -1,8 +1,10 @@
+"use client"
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Camera, Upload, X } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRouter } from 'next/navigation'
 
 const CameraComponent = () => {
   const [open, setOpen] = useState(false)
@@ -13,7 +15,7 @@ const CameraComponent = () => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
-
+  const router = useRouter()
   // Check camera permission on mount
   useEffect(() => {
     const checkPermission = async () => {
@@ -148,7 +150,7 @@ const CameraComponent = () => {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('http://192.168.29.35:8000/quality/', {
+      const response = await fetch('http://localhost:5000/image', {
         method: 'POST',
         body: formData,
       })
@@ -157,6 +159,7 @@ const CameraComponent = () => {
         const result = await response.json()
         console.log('Upload successful:', result)
         setOpen(false)
+        router.push(`/search?q=${encodeURIComponent(result.product_name)}`)
       } else {
         throw new Error(`Upload failed: ${response.statusText}`)
       }
