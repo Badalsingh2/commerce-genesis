@@ -1,6 +1,21 @@
-import { clerkMiddleware } from '@clerk/nextjs/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
-export default clerkMiddleware()
+const isAdminRoute = createRouteMatcher(['/vendor(.*)'])
+const isCustomerRoute = createRouteMatcher(['/customer(.*)'])
+
+export default clerkMiddleware(async (auth, req) => {
+  // Protect all routes starting with `/admin`
+  if (isAdminRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'vendor') {
+    const url = new URL('/', req.url)
+    return NextResponse.redirect(url)
+  }
+
+  if (isCustomerRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'customer') {
+    const url = new URL('/', req.url)
+    return NextResponse.redirect(url)
+  }
+})
 
 export const config = {
   matcher: [
