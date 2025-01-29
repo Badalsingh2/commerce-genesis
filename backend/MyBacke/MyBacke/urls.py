@@ -39,6 +39,8 @@ urlpatterns = [
     path('reviews-and-summary/<int:product_id>/', views.get_reviews_and_summarize, name='get_reviews_and_summarize'),
     path('directions/', views.get_directions, name='get_directions'),
     path('predict/', views.predict, name='predict'),
+    path("recommend/<int:product_id>/", views.recommend_view, name="recommend_products"),
+    path('products/', views.get_all_products, name='get_all_products'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -21,7 +21,15 @@ import numpy as np
 import pickle
 from django.conf import settings
 from sklearn.preprocessing import LabelEncoder
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import os
 # Create your views here.
+
+
+  # Remove any leading/trailing spaces
+
 
 @api_view(['GET'])
 def sample_data(request):
@@ -92,8 +100,30 @@ def get_user_by_id(request, user_id):
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
     
+def get_all_products(request):
+    products = Product.objects.all()
 
+    # Serialize the products data
+    products_data = []
+    for product in products:
+        products_data.append({
+            "id": product.id,
+            "title": product.title,
+            "product_rating": product.product_rating,
+            "selling_price": str(product.selling_price),  # Convert to string to avoid Decimal issues in JSON
+            "mrp": str(product.mrp),
+            "seller_name": product.seller_name,
+            "seller_rating": product.seller_rating,
+            "description": product.description,
+            "highlights": product.highlights,
+            "image_links": product.image_links,
+            "category_1": product.category_1,
+            "category_2": product.category_2,
+            "category_3": product.category_3,
+        })
 
+    # Return the products as a JSON response
+    return JsonResponse({"products": products_data}, safe=False)
 
 @csrf_exempt  # Disable CSRF for testing (Use proper authentication in production)
 def add_to_cart(request):
@@ -453,7 +483,7 @@ def get_reviews_and_summarize(request, product_id):
 
 
 # direction
-OPENWEATHERMAP_API_KEY = os.getenv("OPENWEATHERMAP_API_KEY")
+OPENWEATHERMAP_API_KEY ='73f3e54f12f068fb0aff346d9c299e21'
 OSRM_BASE_URL = "http://router.project-osrm.org"
 
 
@@ -592,3 +622,42 @@ def predict(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+file_path = os.path.join(BASE_DIR, "dataset.csv")
+
+df = pd.read_csv(file_path)
+df.fillna("", inplace=True)
+df["combined_features"] = df["category_3"] + " " + df["title"] + " " + df["highlights"]
+df.columns = df.columns.str.strip()
+# Compute TF-IDF vectors and similarity matrix
+tfidf = TfidfVectorizer(stop_words="english")
+tfidf_matrix = tfidf.fit_transform(df["combined_features"])
+cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+print(cosine_sim)
+
+# Function to get recommendations
+def recommend_products(product_id, top_n=5):
+    print(product_id)
+    if product_id not in df["product_id"].values:
+        return {"error": "Product ID not found"}
+
+    idx = df[df["product_id"] == product_id].index[0]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    top_indices = [i[0] for i in sim_scores[1:top_n+1]]
+
+    recommendations = df.iloc[top_indices][["product_id", "title", "selling_price", "image_links"]].to_dict(orient="records")
+    return {"recommended_products": recommendations}
+
+# API View for Recommendations
+@csrf_exempt
+def recommend_view(request, product_id):
+    
+    try:
+        product_id = int(product_id)
+        print(product_id)
+        recommendations = recommend_products(product_id)
+        return JsonResponse(recommendations, safe=False)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
