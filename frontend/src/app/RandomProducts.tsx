@@ -1,39 +1,38 @@
 "use client"
-import { useState, useEffect } from "react"
-import axios from "axios"  // Import Axios
-import Product from "@/components/Product"
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Product } from "@/lib/types";
 
-export default function RandomProducts() {
-  const [products, setProducts] = useState([])  // State to store the products
-  const [loading, setLoading] = useState(true)  // State to manage the loading state
-  const [error, setError] = useState(null)  // State to handle errors
+export default function Products() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Make the API call to your Django backend using Axios
-        const response = await axios.get('http://127.0.0.1:8000/products')
+        const response = await axios.get('http://127.0.0.1:8000/products/', {
+          withCredentials: true,  // Ensure authentication tokens are sent
+        });
 
-        // Set products state if the request is successful
-        setProducts(response.data.products)
+        // Take only the first 10 products
+        setProducts(response.data.products.slice(0, 10));
       } catch (err) {
-        // Handle errors in the catch block
-        setError("Error fetching products")
+        setError("Error fetching products");
       } finally {
-        // Set loading to false after data fetching is complete
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchProducts()
-  }, [])  // Empty dependency array so this effect runs once when the component mounts
+    fetchProducts();
+  }, []);
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>
+    return <div>{error}</div>;
   }
 
   return (
@@ -41,9 +40,19 @@ export default function RandomProducts() {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Random Products</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => (
-          <Product key={product.id} {...product} />
+          <ProductCard key={product.id} {...product} />
         ))}
       </div>
     </div>
-  )
+  );
+}
+
+// Ensure the component name matches and exists
+function ProductCard({ id, title, mrp }) {
+  return (
+    <div className="p-4 border rounded-lg shadow">
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <p className="text-gray-700">${mrp}</p>
+    </div>
+  );
 }

@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.views import APIView
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, redirect
@@ -15,7 +16,7 @@ from transformers import pipeline
 from huggingface_hub import login
 from rest_framework import status
 from .models import Product, Review
-from .serializers import ReviewSerializer
+from .serializers import ReviewSerializer,ProductSerializer
 import requests
 import numpy as np
 import pickle
@@ -662,3 +663,47 @@ def recommend_view(request, product_id):
         return JsonResponse(recommendations, safe=False)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+
+
+@csrf_exempt
+def get_all_categories(request):
+    # Get all unique categories for category_1, category_2, and category_3
+    categories = {
+        "category_1": Product.objects.values_list('category_1', flat=True).distinct(),
+
+    }
+    
+    # Convert the querysets to lists
+    categories = {key: list(value) for key, value in categories.items()}
+    
+    # Return as a JSON response
+    return JsonResponse(categories)
+
+class ProductByCategoryView(APIView):
+    def get(self, request, *args, **kwargs):
+        # Get the category from the query parameters
+        category = request.query_params.get("category_1", None)
+        
+        if category:
+            # Filter products based on category_1
+            products = Product.objects.filter(category_1=category)
+        else:
+            # If no category is provided, return all products
+            products = Product.objects.all()
+
+        # Serialize the products
+        serializer = ProductSerializer(products, many=True)
+
+        # Return the products in the response
+        return Response({"products": serializer.data}, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        # Create a new product from the POST data
+        serializer = ProductSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Save the new product
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

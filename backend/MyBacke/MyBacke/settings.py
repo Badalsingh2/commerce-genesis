@@ -15,7 +15,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+ALLOWED_HOSTS=['*']
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -31,28 +31,60 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
-    'corsheaders',
+    'corsheaders',  # Make sure this is included
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "rest_framework",
-    'mainApp',       
+    'rest_framework',
+    'mainApp',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # CORS Middleware MUST be at the top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',   
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3001",  # Frontend in development
+    "http://127.0.0.1:3001",
+]
 
+# If you need to allow all origins (not recommended for production)
+CORS_ALLOW_ALL_ORIGINS = False  # Set to True only for debugging
+
+# If using authentication (cookies, sessions)
+CORS_ALLOW_CREDENTIALS = True
+
+# Allowed request methods
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+]
+
+# Allowed headers
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+    'x-csrftoken'
+]
+
+# CSRF Trusted Origins
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3001",
+    "http://127.0.0.1:3001"
+]
 ROOT_URLCONF = 'MyBacke.urls'
 
 TEMPLATES = [
@@ -72,9 +104,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'MyBacke.wsgi.application'
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3001",  # Add this to allow requests from localhost:3001
-]
+
+
 
 
 # Database
