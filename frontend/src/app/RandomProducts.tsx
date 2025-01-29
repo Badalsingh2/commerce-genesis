@@ -1,10 +1,11 @@
 "use client"
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Product } from "@/lib/types";
+import { Product, Products } from "@/lib/types";
+import ProductCompo from "@/components/ProductCompo";
 
 export default function Products() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Products>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -40,7 +41,7 @@ export default function Products() {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Random Products</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => (
-          <ProductCard key={product.id} {...product} />
+          <ProductCompo key={product.id} {...product} />
         ))}
       </div>
     </div>

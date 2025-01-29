@@ -1,4 +1,4 @@
-import Product from "./Product"
+import Product from "./ProductCompo"
 
 const products = [
   { id: 1, name: "Organic Apples", rating: 4.5, price: 2.99, discount: 10, image: "/images/organic-apples.jpg" },

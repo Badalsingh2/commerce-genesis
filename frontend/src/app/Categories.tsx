@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import ProductCompo from "@/components/ProductCompo";
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -74,13 +75,7 @@ export default function Categories() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map((product) => (
-                <div key={product.id} className="bg-white shadow rounded-lg p-6 text-center">
-                  <h4 className="text-xl font-semibold text-gray-900 mb-2">{product.title}</h4>
-                  <p className="text-gray-600">${product.selling_price}</p>
-                  <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition duration-300">
-                    View Details
-                  </button>
-                </div>
+                <ProductCompo key={product.id} {...product} />
               ))}
             </div>
           </div>
