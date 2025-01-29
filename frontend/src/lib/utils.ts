@@ -1,3 +1,4 @@
+"use client"
 import { Roles } from "@/types/globals";
 import { clsx, type ClassValue } from "clsx"
 import { useRouter } from "next/navigation";
