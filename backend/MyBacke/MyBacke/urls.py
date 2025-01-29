@@ -33,6 +33,12 @@ urlpatterns = [
     path('add-product/', views.add_product, name='add_product'),
     path('orders/<int:user_id>/', views.view_orders, name='view_orders'),
     path('upload/', views.image_upload, name='image_upload'),
+    path('summarize/', views.summarize_review, name='summarize_review'),
+    path('add-review/', views.add_review, name='add_review'),
+    path('reviews/<int:product_id>/', views.get_reviews_by_product, name='get_reviews_by_product'),
+    path('reviews-and-summary/<int:product_id>/', views.get_reviews_and_summarize, name='get_reviews_and_summarize'),
+    path('directions/', views.get_directions, name='get_directions'),
+    path('predict/', views.predict, name='predict'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

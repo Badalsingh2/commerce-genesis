@@ -8,9 +8,19 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, redirect
-from .models import Product, Cart, CartItem, OrderItem, Order
+from .models import Product, Cart, CartItem, OrderItem, Order, User
 from django.core.files.storage import FileSystemStorage
 from inference_sdk import InferenceHTTPClient
+from transformers import pipeline
+from huggingface_hub import login
+from rest_framework import status
+from .models import Product, Review
+from .serializers import ReviewSerializer
+import requests
+import numpy as np
+import pickle
+from django.conf import settings
+from sklearn.preprocessing import LabelEncoder
 # Create your views here.
 
 @api_view(['GET'])
@@ -310,3 +320,275 @@ def image_upload(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
+login(token="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")
+
+# Load the pre-trained DistilBERT summarization model
+summarizer = pipeline("summarization", model="mabrouk/amazon-review-summarizer-bart")
+
+@csrf_exempt
+def summarize_review(request):
+    if request.method == "POST":
+        data = request.POST.get('review')  # Get the review from POST data
+        if not data:
+            return JsonResponse({"error": "No review provided"}, status=400)
+        
+        # Summarize the review
+        summary = summarizer(data, min_length=60)
+        
+        # Extract the summary text from the result
+        summarized_text = summary[0]["summary_text"]
+        
+        return JsonResponse({"summary": summarized_text})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+# add_reivew
+# +++++REVIEW SECTION++++++
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Product, Review
+
+@csrf_exempt  # Add this decorator to exempt CSRF for testing
+def add_review(request):
+    if request.method == "POST":
+        try:
+            # Parse the incoming JSON data
+            data = json.loads(request.body)
+
+            # Get product ID and other review details
+            product = Product.objects.get(id=data['product'])
+            user_name = data['user_name']
+            user_email = data['user_email']
+            rating = data['rating']
+            comment = data.get('comment', '')
+
+            # Create a new review
+            review = Review.objects.create(
+                product=product,
+                user_name=user_name,
+                user_email=user_email,
+                rating=rating,
+                comment=comment
+            )
+
+            return JsonResponse({"message": "Review added successfully!"}, status=201)
+
+        except Product.DoesNotExist:
+            return JsonResponse({"error": "Product not found!"}, status=404)
+        except KeyError as e:
+            return JsonResponse({"error": f"Missing key: {e}"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+# get reviews by id
+@csrf_exempt
+def get_reviews_by_product(request, product_id):
+    try:
+        # Get the product by ID
+        product = Product.objects.get(id=product_id)
+
+        # Get all reviews for the product
+        reviews = Review.objects.filter(product=product)
+
+        # Prepare a list of review data
+        reviews_data = [
+            {
+                "user_name": review.user_name,
+                "user_email": review.user_email,
+                "rating": review.rating,
+                "comment": review.comment,
+                "created_at": review.created_at,
+            }
+            for review in reviews
+        ]
+
+        return JsonResponse({"product": product.title, "reviews": reviews_data}, status=200)
+
+    except Product.DoesNotExist:
+        return JsonResponse({"error": "Product not found!"}, status=404)
+
+@csrf_exempt  
+def get_reviews_and_summarize(request, product_id):
+    try:
+        # Get the product by ID
+        product = Product.objects.get(id=product_id)
+
+        # Get all reviews for the product
+        reviews = Review.objects.filter(product=product)
+
+        # Concatenate all review comments
+        all_comments = " ".join([review.comment for review in reviews if review.comment])
+        if len(all_comments) <100:
+            return JsonResponse({"error":"For Summarization length should be getter then 150"},status=404)
+
+        # Summarize the concatenated comments
+        summarized_comment = summarizer(all_comments, min_length=50, max_length=120)[0]['summary_text']
+
+        # Prepare a list of review data
+        reviews_data = [
+            {
+                "user_name": review.user_name,
+                "user_email": review.user_email,
+                "rating": review.rating,
+                "comment": review.comment,
+                "created_at": review.created_at,
+            }
+            for review in reviews
+        ]
+
+        # Return the summarized comment and the reviews data
+        return JsonResponse({
+            "product": product.title,
+            "summarized_comments": summarized_comment,
+            "reviews": reviews_data
+        }, status=200)
+
+    except Product.DoesNotExist:
+        return JsonResponse({"error": "Product not found!"}, status=404)
+    
+
+
+# direction
+OPENWEATHERMAP_API_KEY = os.getenv("OPENWEATHERMAP_API_KEY")
+OSRM_BASE_URL = "http://router.project-osrm.org"
+
+
+@csrf_exempt  # Disable CSRF token validation for testing, but should be handled securely in production
+def get_directions(request):
+    try:
+        # Get query parameters from the request
+        origin_lat = float(request.GET.get("origin_lat"))
+        origin_lon = float(request.GET.get("origin_lon"))
+        destination_lat = float(request.GET.get("destination_lat"))
+        destination_lon = float(request.GET.get("destination_lon"))
+        
+        print(f"Origin: ({origin_lat}, {origin_lon}), Destination: ({destination_lat}, {destination_lon})")
+    except Exception as e:
+        return JsonResponse({"error": f"Invalid query parameters: {e}"})
+
+    # Step 1: Get the route from OSRM
+    osrm_route_url = (
+        f"{OSRM_BASE_URL}/route/v1/driving/{origin_lon},{origin_lat};{destination_lon},{destination_lat}"
+        f"?overview=full&geometries=geojson"
+    )
+    osrm_response = requests.get(osrm_route_url)
+    osrm_data = osrm_response.json()
+    
+    if osrm_response.status_code != 200 or "routes" not in osrm_data or not osrm_data["routes"]:
+        return JsonResponse({"error": "Unable to fetch directions from OSRM."})
+
+    # Extract route information
+    route = osrm_data["routes"][0]
+    distance = route["distance"] / 1000  # Convert to kilometers
+    duration = route["duration"] / 60  # Convert to minutes
+    waypoints = route["geometry"]["coordinates"]
+
+    # Step 2: Fetch weather data for waypoints from OpenWeatherMap
+    weather_data = []
+    for i, waypoint in enumerate(waypoints[::len(waypoints)//10 + 1]):  # Sample waypoints (10 points max)
+        lon, lat = waypoint
+        weather_url = (
+            f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={OPENWEATHERMAP_API_KEY}&units=metric"
+        )
+        weather_response = requests.get(weather_url)
+        if weather_response.status_code == 200:
+            weather_info = weather_response.json()
+            weather_data.append({
+                "waypoint": f"Point {i + 1} ({lat}, {lon})",
+                "temperature": weather_info["main"]["temp"],
+                "weather": weather_info["weather"][0]["description"]
+            })
+        else:
+            weather_data.append({"waypoint": f"Point {i + 1} ({lat}, {lon})", "error": "Unable to fetch weather data."})
+
+    # Step 3: Combine directions and weather data
+    return JsonResponse({
+        "total_distance_km": f"{distance:.2f} km",
+        "total_duration_min": f"{duration:.2f} minutes",
+        "weather_conditions": weather_data,
+    })
+
+import joblib
+
+# Define BASE_DIR (already defined in your settings.py)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Load the pickled model and encoder
+model_path = os.path.join(BASE_DIR, 'mainApp', 'trained_model', 'dynamic_price.joblib')
+
+encoder_path = os.path.join(BASE_DIR, 'mainApp', 'trained_model', 'encoder_category_1.joblib')
+encoder_path2 = os.path.join(BASE_DIR, 'mainApp', 'trained_model', 'encoder_category_2.joblib')
+encoder_path3 = os.path.join(BASE_DIR, 'mainApp', 'trained_model', 'encoder_category_3.joblib')
+try:
+    with open(model_path, 'rb') as model_file:
+        model = joblib.load(model_file)
+    with open(encoder_path, 'rb') as encoder_file:
+        encode1 = joblib.load(encoder_file)
+    with open(encoder_path2, 'rb') as encoder_file:
+        encode2 = joblib.load(encoder_file)
+    with open(encoder_path3, 'rb') as encoder_file:
+        encode3 = joblib.load(encoder_file)
+except Exception as e:
+    raise RuntimeError(f"Error loading model or encoder: {str(e)}")
+
+print(type(model))
+@csrf_exempt
+def predict(request):
+    if request.method == "POST":
+        try:
+            # Parse JSON data from the request body
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            user_id = data.get('user_id')
+
+            if not product_id or not user_id:
+                return JsonResponse({"error": "product_id and user_id are required"}, status=400)
+
+            # Fetch product and user details
+            try:
+                product = Product.objects.get(id=product_id)
+                user = User.objects.get(id=user_id)
+            except ObjectDoesNotExist:
+                return JsonResponse({"error": "Product or User not found"}, status=404)
+
+            # Get product details
+            product_rating = product.product_rating
+            seller_rating = product.seller_rating
+            mrp = product.mrp
+            print(data)
+            # Encode the categories
+            try:
+                category_1_encoded = encode1.transform([product.category_1])[0]
+                category_2_encoded = encode2.transform([product.category_2])[0]
+                category_3_encoded = encode3.transform([product.category_3])[0]
+            except Exception as e:
+                return JsonResponse({"error": f"Error encoding categories: {str(e)}"}, status=500)
+
+            # Prepare the feature vector for prediction
+            features = np.array([
+                mrp,
+                product_rating,
+                seller_rating,
+                category_1_encoded,
+                category_2_encoded,
+                category_3_encoded
+            ]).reshape(1, -1)  # Reshape to fit the model input format
+
+            # Make prediction
+            prediction = model.predict(features)
+
+            # Return the prediction as a JSON response
+            return JsonResponse({
+                "prediction": prediction.tolist()  # Convert numpy array to list
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)

@@ -27,6 +27,12 @@ class Product(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def average_review_rating(self):
+        reviews = self.reviews.all()
+        if reviews.exists():
+            return sum([review.rating for review in reviews]) / reviews.count()
+        return 0.0
 
 # Cart model
 class Cart(models.Model):
@@ -78,3 +84,22 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.title} (Order {self.order.id})"
+
+
+class Review(models.Model):
+    # Product the review belongs to
+    product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
+
+    # User details (optional, can be extended with user authentication later)
+    user_name = models.CharField(max_length=255)  # User's name
+    user_email = models.EmailField()  # User's email
+
+    # Review content
+    rating = models.DecimalField(max_digits=3, decimal_places=2)  # Rating out of 5
+    comment = models.TextField(blank=True, null=True)  # Review comment
+
+    # Timestamp
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Review for {self.product.title} by {self.user_name}'
