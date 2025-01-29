@@ -1,21 +1,10 @@
-"use client"
-//searhc products
-//  - ai summary of review
-//    - add user details like address
-//      - live image of product
+import ProductSearch from "./product-search"
 
-import { useSearchParams } from "next/navigation";
-import { ProductList } from "./ProductList";
-
-//        - fake product via upload
-export default function SearchPage() {
-  const query = useSearchParams().get("q");
+export default function Home() {
   return (
-    <div>
-
-      <p>Searching for: '{query}'</p>
-      <ProductList />
-    </div>
-
+    <main className="flex justify-center mx-auto py-6">
+      <ProductSearch />
+    </main>
   )
 }
+

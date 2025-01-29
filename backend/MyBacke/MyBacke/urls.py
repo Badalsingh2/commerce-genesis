@@ -41,6 +41,8 @@ urlpatterns = [
     path('predict/', views.predict, name='predict'),
     path("recommend/<int:product_id>/", views.recommend_view, name="recommend_products"),
     path('products/', views.get_all_products, name='get_all_products'),
+    path('categories/', views.get_all_categories, name='all_categories'),
+    path('getproducts/', views.ProductByCategoryView.as_view(), name='product_by_category'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -3,10 +3,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import type React from "react" // Import React
-
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Foodie - Fresh Local Produce",
@@ -27,7 +24,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <body className={inter.className}>{children}</body>
+          <body>
+            {children}
+          </body>
           <Toaster />
         </ThemeProvider>
       </html>
