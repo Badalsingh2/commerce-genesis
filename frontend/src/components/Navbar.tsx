@@ -4,6 +4,7 @@ import { ModeToggle } from "./ModeToggle";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import Script from "next/script";
 import { useEffect } from "react";
+import { Button } from "./ui/button";
 
 export default function Navbar() {
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function Navbar() {
 
           <ModeToggle />
           <SignedOut>
+            <Button>Dashboad</Button>
             <SignInButton />
           </SignedOut>
           <SignedIn>
