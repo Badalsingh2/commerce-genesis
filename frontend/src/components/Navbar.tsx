@@ -7,13 +7,15 @@ import { useEffect, useState } from "react";
 import { setCookie } from "cookies-next";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"; // Import shadcn Popover components
 import { Button } from "./ui/button"; // Import shadcn Button
-import { useRouter } from "next/navigation";
+import { useUserRole } from "@/hooks/useUserRole";
+import { ShoppingCartIcon } from "lucide-react";
 
 export default function Navbar() {
   const router = useRouter();
   const { isLoaded } = useUser();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
+    
   useEffect(() => {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement(
