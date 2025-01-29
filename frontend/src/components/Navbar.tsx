@@ -1,24 +1,19 @@
 "use client"
 import Link from "next/link";
 import { ModeToggle } from "./ModeToggle";
-import { SignedIn, SignedOut, SignInButton, SignOutButton, UserButton, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import Script from "next/script";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { setCookie } from "cookies-next";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"; // Import shadcn Popover components
 import { Button } from "./ui/button"; // Import shadcn Button
-import { useUserRole } from "@/hooks/useUserRole";
 import { useRouter } from "next/navigation";
-import { ShoppingCartIcon } from "lucide-react";
 
 export default function Navbar() {
   const router = useRouter();
-  const rolle = useUserRole();
-  const { user, isLoaded } = useUser();
+  const { isLoaded } = useUser();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
-    const router = useRouter();
   useEffect(() => {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement(
@@ -43,15 +38,15 @@ export default function Navbar() {
 
   return (
     <nav className="bg-background shadow fixed z-10 w-full mx-auto px-4 sm:px-6 lg:px-8">
-     <div>
-     <Script
-        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-        strategy="afterInteractive"
-      />
-     </div>
-     
-      
-        
+      <div>
+        <Script
+          src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
+      </div>
+
+
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16">
         <div className="flex-shrink-0 flex items-center">
           <Link href="/" className="text-2xl font-bold text-primary transition-colors hover:text-foreground">
@@ -60,7 +55,7 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-2">
           <div id="google_translate_element" className="translate-container"></div>
-            
+
           <ModeToggle />
           <div className="flex gap-4">
             <SignedOut>
@@ -106,7 +101,7 @@ export default function Navbar() {
 
             <SignedIn>
               <div className="flex items-center gap-4">
-                <Button variant="ghost" onClick={() => router.push(`/${rolle}`)}>Go To Dashboard</Button>
+                <Button variant="ghost" onClick={() => router.push(`/${selectedRole}`)}>Go To Dashboard</Button>
                 <UserButton />
               </div>
             </SignedIn>
