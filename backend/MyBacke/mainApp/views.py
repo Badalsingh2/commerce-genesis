@@ -100,7 +100,31 @@ def get_user_by_id(request, user_id):
         })
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
+
+@csrf_exempt
+def get_product_by_id(request, product_id):
+    # Get the product by ID or return 404 if not found
+    product = get_object_or_404(Product, pk=product_id)
+
+    # Get the average review rating using the method defined in the Product model
+    average_rating = product.average_review_rating()
+
+    # Prepare the product data for response
+    product_data = {
+        'id': product.id,
+        'title': product.title,
+        'description': product.description,
+        'selling_price': product.selling_price,
+        'mrp': product.mrp,
+        'product_rating': average_rating,  # Display the average review rating
+        'image_links': product.image_links,
+        'seller_name': product.seller_name,
+        'seller_rating': product.seller_rating,
+    }
     
+    # Return the data as a JSON response
+    return JsonResponse(product_data) 
+
 @csrf_exempt   
 def get_all_products(request):
     products = Product.objects.all()
@@ -305,10 +329,10 @@ import os
 @csrf_exempt
 def image_upload(request):
     if request.method == "POST":
-        if "image" not in request.FILES:
+        if "file" not in request.FILES:
             return JsonResponse({"error": "No image file uploaded"}, status=400)
 
-        uploaded_file = request.FILES["image"]
+        uploaded_file = request.FILES["file"]
         
         # Validate the file is an image
         if not uploaded_file.content_type.startswith('image'):

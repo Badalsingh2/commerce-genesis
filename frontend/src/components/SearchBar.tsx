@@ -1,14 +1,21 @@
 "use client";
-import { CameraIcon, SearchIcon } from "lucide-react";
+import { CameraIcon, SearchIcon, Voicemail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import CameraComponent from "./CameraComponent";
+import { VoiceInput } from "./VoiceButton";
+import { useVoiceRecognition } from "@/lib/utils";
 
 export default function SearchBar() {
-  const [query, setQuery] = useState("");
+  const urlQuery = useSearchParams().get("q");
+  const [query, setQuery] = useState(urlQuery || "");
   const router = useRouter();
+
+  const { isRecording, toggleRecording } = useVoiceRecognition({
+    onTranscript: setQuery,
+  });
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && query.trim()) {
@@ -38,6 +45,10 @@ export default function SearchBar() {
         />
 
         {/* Camera Button (Fixed Square Shape) */}
+        <VoiceInput
+          isRecording={isRecording}
+          onToggleRecording={toggleRecording}
+        />
         <CameraComponent />
       </div>
     </div>
