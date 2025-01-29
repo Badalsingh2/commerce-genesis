@@ -43,6 +43,7 @@ urlpatterns = [
     path('products/', views.get_all_products, name='get_all_products'),
     path('categories/', views.get_all_categories, name='all_categories'),
     path('getproducts/', views.ProductByCategoryView.as_view(), name='product_by_category'),
+    path('product/<int:product_id>/', views.get_product_by_id, name='get_product_by_id'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
