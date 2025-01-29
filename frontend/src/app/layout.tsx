@@ -1,5 +1,6 @@
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import type React from "react" // Import React
@@ -17,16 +18,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <body className={inter.className}>{children}</body>
-      </ThemeProvider>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <body className={inter.className}>{children}</body>
+        </ThemeProvider>
+      </html>
+    </ClerkProvider>
   )
 }
 

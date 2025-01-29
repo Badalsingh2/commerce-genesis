@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ModeToggle } from "./ModeToggle"
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs"
 
 export default function Navbar() {
   return (
@@ -10,17 +11,14 @@ export default function Navbar() {
             Foodie
           </Link>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <ModeToggle />
-          <Link
-            href="/signup"
-            className="text-foreground hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium"
-          >
-            Signup
-          </Link>
-          <Link href="/login" className="text-foreground hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">
-            Login
-          </Link>
+          <SignedOut>
+            <SignInButton />
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
         </div>
       </div>
     </nav>
