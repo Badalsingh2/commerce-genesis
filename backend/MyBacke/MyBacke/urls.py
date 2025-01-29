@@ -23,7 +23,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/sample/',views.sample_data,name='sample_data'),
-     path('api/register/', views.register_user, name='register_user'),
+    path('api/register/', views.register_user, name='register_user'),
     path('api/login/', views.login_user, name='login_user'),
     path('api/logout/', views.logout_user, name='logout_user'),
     path('api/user/<int:user_id>/', views.get_user_by_id, name='get_user_by_id'),
@@ -32,7 +32,7 @@ urlpatterns = [
     path('place-order/', views.place_order, name='place_order'),
     path('add-product/', views.add_product, name='add_product'),
     path('orders/<int:user_id>/', views.view_orders, name='view_orders'),
-
+    path('upload/', views.image_upload, name='image_upload'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

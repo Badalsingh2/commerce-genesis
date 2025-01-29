@@ -9,6 +9,8 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, redirect
 from .models import Product, Cart, CartItem, OrderItem, Order
+from django.core.files.storage import FileSystemStorage
+from inference_sdk import InferenceHTTPClient
 # Create your views here.
 
 @api_view(['GET'])
@@ -240,3 +242,71 @@ def view_orders(request, user_id):
     ]
 
     return JsonResponse({"orders": order_data})
+
+CLIENT = InferenceHTTPClient(
+    api_url="https://detect.roboflow.com",
+    api_key="KwfMOM2p4jMzJWxR5dxC"  # Replace with your API key
+)
+
+from django.core.files.storage import FileSystemStorage
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ValidationError
+import os
+
+from django.core.files.storage import FileSystemStorage
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ValidationError
+import os
+
+@csrf_exempt
+def image_upload(request):
+    if request.method == "POST":
+        if "image" not in request.FILES:
+            return JsonResponse({"error": "No image file uploaded"}, status=400)
+
+        uploaded_file = request.FILES["image"]
+        
+        # Validate the file is an image
+        if not uploaded_file.content_type.startswith('image'):
+            return JsonResponse({"error": "Uploaded file is not an image"}, status=400)
+
+        fs = FileSystemStorage()
+        filename = fs.save(uploaded_file.name, uploaded_file)
+        uploaded_file_path = os.path.join(fs.location, filename)  # Full path to the uploaded file
+        uploaded_file_url = fs.url(filename)
+
+        try:
+            # Perform inference on the uploaded image
+            result = CLIENT.infer(uploaded_file_path, model_id="originality-product/3")  # Use your model ID
+
+            # Initialize the label to "Unknown"
+            label = "Unknown"
+            
+            # Loop through predictions to determine if the class is Fake or Original
+            for prediction in result.get("predictions", []):
+                if prediction.get("class") == "Fake":
+                    label = "Fake"
+                    break
+                elif prediction.get("class") == "Original":
+                    label = "Original"
+
+            # Return the result with the image URL and prediction label
+            response_data = {"image_url": uploaded_file_url, "label": label}
+
+        except Exception as e:
+            # Handle any errors that occur during inference
+            response_data = {"error": str(e)}
+            return JsonResponse(response_data, status=500)
+
+        finally:
+            # Delete the file after processing, whether inference succeeds or fails
+            if os.path.exists(uploaded_file_path):
+                os.remove(uploaded_file_path)
+
+        return JsonResponse(response_data)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
