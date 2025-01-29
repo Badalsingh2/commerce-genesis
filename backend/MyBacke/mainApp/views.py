@@ -26,6 +26,8 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import os
+from django.db.models import Q
+import stripe
 # Create your views here.
 
 
@@ -731,3 +733,38 @@ class ProductByCategoryView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+@api_view(['GET'])
+def search_products(request):
+    query = request.GET.get('q', '').strip()  # Get search query
+    if not query:
+        return Response({"products": []})  # Return empty if no query
+
+    # Search in title and description (modify fields as needed)
+    products = Product.objects.filter(
+        Q(title__icontains=query) | Q(description__icontains=query)
+    )[:10]  # Limit results to 10
+
+    serializer = ProductSerializer(products, many=True)
+    return Response({"products": serializer.data})
+
+
+stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
+
+@csrf_exempt
+def create_payment_intent(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        amount = data.get('amount', 5000)  # Amount in cents ($50.00)
+        currency = 'usd'
+        
+        payment_intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency=currency,
+        )
+        
+        return JsonResponse({
+            'clientSecret': payment_intent['client_secret']
+        })

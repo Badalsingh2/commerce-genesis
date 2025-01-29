@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Search, SlidersHorizontalIcon as SliderHorizontal } from "lucide-react"
 import { type Products } from "@/lib/types"
 import SearchBar from "@/components/SearchBar"
+import ProductGrid12 from "@/components/ProductGrid"
 
 const initialProducts: Products = [
   {
@@ -146,7 +147,7 @@ export default function ProductSearch() {
               <SearchBar />
             </div>
           </div>
-          <ProductGrid products={products} />
+          <ProductGrid12 products={products} />
         </div>
       </div>
     </SidebarProvider>

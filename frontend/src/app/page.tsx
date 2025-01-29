@@ -9,6 +9,7 @@ import { Chat } from "@/components/Chat";
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import TopProducts from "./TopProducts";
 
 export default function HomePage() {
   const [inputMessage, setInputMessage] = useState('')
@@ -19,7 +20,7 @@ export default function HomePage() {
       <Navbar />
       <main className="flex-grow">
         <Hero />
-        <ProductGrid />
+        <TopProducts/>
         <Categories />
         <RandomProducts />
       </main>
