@@ -2,11 +2,20 @@ from django.contrib import admin
 from .models import Product, Cart, CartItem, Order, OrderItem
 
 # Register the Product model
+from django.utils.html import format_html
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'price', 'stock')
-    search_fields = ('name',)
-    list_filter = ('price',)
+    list_display = ('id', 'title', 'category_1', 'selling_price', 'mrp', 'product_rating', 'seller_name', 'image_preview')
+    search_fields = ('title', 'category_1', 'category_2', 'category_3', 'seller_name')
+    list_filter = ('selling_price', 'category_1', 'category_2', 'seller_rating')
+
+    def image_preview(self, obj):
+        if obj.image_links:
+            return format_html('<img src="{}" width="50" height="50" style="border-radius: 5px;" />', obj.image_links)
+        return "No Image"
+
+    image_preview.short_description = "Image Preview"
 
 # Register the Cart model
 @admin.register(Cart)

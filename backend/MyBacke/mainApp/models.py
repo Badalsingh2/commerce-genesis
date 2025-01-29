@@ -3,13 +3,30 @@ from django.contrib.auth.models import User
 
 # Product model (if not already defined)
 class Product(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.PositiveIntegerField(default=0)
+    # Categories (hierarchical)
+    category_1 = models.CharField(max_length=100, blank=True, null=True)
+    category_2 = models.CharField(max_length=100, blank=True, null=True)
+    category_3 = models.CharField(max_length=100, blank=True, null=True)
+
+    # Product details
+    title = models.CharField(max_length=255)  # Product name
+    product_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)  # Rating out of 5
+    selling_price = models.DecimalField(max_digits=10, decimal_places=2)  # Selling price
+    mrp = models.DecimalField(max_digits=10, decimal_places=2)  # Maximum retail price
+
+    # Seller details
+    seller_name = models.CharField(max_length=255)  # Seller's name
+    seller_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)  # Seller rating out of 5
+
+    # Additional details
+    description = models.TextField(blank=True, null=True)  # Detailed description
+    highlights = models.TextField(blank=True, null=True)  # Key features
+
+    # Image links
+    image_links = models.URLField(max_length=500, blank=True, null=True)  # URL or path to product image
 
     def __str__(self):
-        return self.name
+        return self.title
 
 # Cart model
 class Cart(models.Model):
