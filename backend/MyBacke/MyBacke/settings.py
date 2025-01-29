@@ -53,8 +53,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3001",  # Frontend in development
-    "http://127.0.0.1:3001",
+    "http://localhost:3000",  # Frontend in development
+    "http://127.0.0.1:3000",
 ]
 
 # If you need to allow all origins (not recommended for production)
@@ -82,8 +82,8 @@ CORS_ALLOW_HEADERS = [
 
 # CSRF Trusted Origins
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3001",
-    "http://127.0.0.1:3001"
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
 ]
 ROOT_URLCONF = 'MyBacke.urls'
 
