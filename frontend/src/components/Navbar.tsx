@@ -114,7 +114,18 @@ export default function Navbar() {
 
             <SignedIn>
               <div className="flex items-center gap-4">
-                <Button variant="ghost" className="hover:bg-primary/10" onClick={handleDashboardRedirect}>
+                <Button
+                  variant="ghost"
+                  className="hover:bg-primary/10"
+                  onClick={() => router.push(`/cart`)}
+                >
+                  Cart
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="hover:bg-primary/10"
+                  onClick={() => router.push(`/${selectedRole}`)}
+                >
                   Go To Dashboard
                 </Button>
                 <UserButton />
