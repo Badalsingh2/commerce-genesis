@@ -7,6 +7,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Trash, CheckCircle, Plus, Minus, ShoppingCart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe("pk_test_51PXp2oIxKA4SqfaM2SFwVQVZBJ9bmcWnh2HgtcYashdagjEWjDthFk8Gn8Oj7wfu0jBldTMBMiE3UnUEuKkPm3mH00uW5HX8qL");
 
 interface CartItem {
   productId: number;
@@ -15,16 +19,62 @@ interface CartItem {
   totalPrice: string;
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0 },
-  exit: { opacity: 0, x: -20 }
-};
+function CheckoutForm({ total }: { total: string }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setIsProcessing(true);
+
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: "http://localhost:3000/orders",
+      },
+    });
+
+    if (error) {
+      console.error(error);
+      // Add error handling here
+    }
+    setIsProcessing(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <PaymentElement />
+      <div className="flex items-center justify-between mt-4">
+        <p className="text-2xl font-semibold text-foreground">
+          Total: ${total}
+        </p>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isProcessing || !stripe || !elements}
+          className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+        >
+          {isProcessing ? "Processing..." : (
+            <>
+              <CheckCircle className="h-5 w-5" />
+              Pay Now
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+}
 
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -57,9 +107,24 @@ export default function CartPage() {
   const calculateTotal = () =>
     items.reduce((total, item) => total + parseFloat(item.totalPrice), 0).toFixed(2);
 
-  const handleConfirmOrder = () => {
-    alert("Order confirmed! Thank you for your purchase.");
-    setItems([]);
+  const handleCheckout = async () => {
+    setIsProcessingCheckout(true);
+    try {
+      const totalAmount = parseFloat(calculateTotal()) * 100;
+      const response = await fetch("http://localhost:3001/create-payment-intent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount: totalAmount }),
+      });
+      const data = await response.json();
+      setClientSecret(data.clientSecret);
+    } catch (error) {
+      setError("Failed to initialize payment. Please try again.");
+    } finally {
+      setIsProcessingCheckout(false);
+    }
   };
 
   return (
@@ -105,7 +170,11 @@ export default function CartPage() {
             {items.map(item => (
               <motion.div
                 key={item.productId}
-                variants={itemVariants}
+                variants={{
+                  hidden: { opacity: 0, y: 10 },
+                  visible: { opacity: 1, y: 0 },
+                  exit: { opacity: 0, x: -20 }
+                }}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
@@ -169,22 +238,33 @@ export default function CartPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mt-6 sticky bottom-0 bg-background/95 backdrop-blur-lg rounded-lg p-4 shadow-xl border"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-2xl font-semibold text-foreground">
-                ${calculateTotal()}
-              </p>
+          {clientSecret ? (
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
+              <CheckoutForm total={calculateTotal()} />
+            </Elements>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-semibold text-foreground">
+                  ${calculateTotal()}
+                </p>
+              </div>
+              <Button
+                size="lg"
+                onClick={handleCheckout}
+                disabled={isProcessingCheckout}
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isProcessingCheckout ? "Processing..." : (
+                  <>
+                    <CheckCircle className="h-5 w-5" />
+                    Checkout
+                  </>
+                )}
+              </Button>
             </div>
-            <Button
-              size="lg"
-              onClick={handleConfirmOrder}
-              className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              <CheckCircle className="h-5 w-5" />
-              Checkout
-            </Button>
-          </div>
+          )}
         </motion.div>
       )}
     </motion.div>
