@@ -1,8 +1,13 @@
 import { Product } from "@/lib/types";
-import { StarIcon } from "lucide-react";
+import { StarIcon, ShoppingCart, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProductCompo({
     id,
@@ -20,17 +25,11 @@ export default function ProductCompo({
     image_links,
 }: Product) {
     const [isAdding, setIsAdding] = useState(false);
-    const [addError, setAddError] = useState<string | null>(null);
-    const [addSuccess, setAddSuccess] = useState<string | null>(null);
-
-    // Dynamically fetch user ID (if available via context or session)
-    const userId = "2"; // Replace this with the actual user ID from session/context
+    const userId = "2";
+    const { toast } = useToast();
 
     const handleAddToCart = async () => {
         setIsAdding(true);
-        setAddError(null);
-        setAddSuccess(null);
-
         try {
             const response = await fetch("http://127.0.0.1:8000/add-to-cart/", {
                 method: "POST",
@@ -48,63 +47,119 @@ export default function ProductCompo({
                 throw new Error(errorData.message || "Failed to add item to cart");
             }
 
-            const data = await response.json();
-            setAddSuccess("Item successfully added to cart!");
+            toast({
+                title: "Success",
+                description: "Item added to cart successfully",
+                duration: 2000,
+            });
         } catch (err: any) {
-            setAddError(err.message || "An unexpected error occurred");
+            toast({
+                title: "Error",
+                description: err.message || "An unexpected error occurred",
+                variant: "destructive",
+                duration: 3000,
+            });
         } finally {
             setIsAdding(false);
         }
     };
 
+    const discountPercentage = mrp && selling_price < mrp
+        ? Math.round(((mrp - selling_price) / mrp) * 100)
+        : null;
+
     return (
-        <div key={id} className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-all">
-            <Link href={`/product/${id}`} className="block">
-                <div className="w-full h-48 relative mb-4">
-                    <Image
-                        src={image_links || "/placeholder.svg"}
-                        alt={title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-md"
-                    />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-                <div className="flex items-center mb-2">
-                    <StarIcon className="h-5 w-5 text-yellow-400" />
-                    <span className="ml-1 text-sm text-gray-600">{product_rating}</span>
-                </div>
-                <div className="flex justify-between items-center mb-2">
-                    <span className="text-lg font-bold text-gray-900">
-                        ${selling_price}
-                    </span>
-                    {mrp && selling_price < mrp && (
-                        <span className="text-sm text-green-600 font-medium line-through">
-                            ${mrp}
-                        </span>
-                    )}
-                </div>
-                <div className="flex items-center">
-                    <span className="text-sm text-gray-600">Seller: {seller_name}</span>
-                    <div className="ml-2 flex items-center">
-                        <StarIcon className="h-4 w-4 text-yellow-400" />
-                        <span className="text-sm text-gray-600">{seller_rating}</span>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+        >
+            <Card className="overflow-hidden group">
+                <Link href={`/product/${id}`} className="block">
+                    <div className="relative">
+                        <motion.div
+                            className="w-full h-56 relative overflow-hidden"
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <Image
+                                src={image_links || "/placeholder.svg"}
+                                alt={title}
+                                layout="fill"
+                                objectFit="cover"
+                                className="rounded-t-lg"
+                            />
+                        </motion.div>
+                        {discountPercentage && (
+                            <Badge 
+                                className="absolute top-2 right-2 bg-green-500 hover:bg-green-600"
+                            >
+                                {discountPercentage}% OFF
+                            </Badge>
+                        )}
                     </div>
-                </div>
-            </Link>
 
-            <div className="mt-4">
-                <button
-                    onClick={handleAddToCart}
-                    disabled={isAdding}
-                    className="px-4 py-2 bg-blue-500 text-white rounded mt-2 w-full"
-                >
-                    {isAdding ? "Adding..." : "Add to Cart"}
-                </button>
+                    <CardContent className="p-4">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                            {title}
+                        </h3>
+                        
+                        <div className="flex items-center space-x-1 mb-3">
+                            <div className="flex items-center bg-green-50 px-2 py-1 rounded-full">
+                                <StarIcon className="h-4 w-4 text-green-500 fill-green-500" />
+                                <span className="ml-1 text-sm font-medium text-green-700">
+                                    {product_rating}
+                                </span>
+                            </div>
+                            <div className="text-sm text-gray-500">|</div>
+                            <div className="flex items-center text-sm text-gray-600">
+                                <span className="font-medium">{seller_name}</span>
+                                <StarIcon className="h-4 w-4 text-yellow-400 ml-1" />
+                                <span className="ml-1">{seller_rating}</span>
+                            </div>
+                        </div>
 
-                {addError && <p className="text-red-500 text-sm mt-2">{addError}</p>}
-                {addSuccess && <p className="text-green-500 text-sm mt-2">{addSuccess}</p>}
-            </div>
-        </div>
+                        <div className="flex items-baseline gap-2 mb-3">
+                            <span className="text-2xl font-bold text-gray-900">
+                                ${selling_price}
+                            </span>
+                            {mrp && selling_price < mrp && (
+                                <span className="text-sm text-gray-500 line-through">
+                                    ${mrp}
+                                </span>
+                            )}
+                        </div>
+                    </CardContent>
+                </Link>
+
+                <CardFooter className="p-4 pt-0">
+                    <Button 
+                        className="w-full group relative"
+                        onClick={handleAddToCart}
+                        disabled={isAdding}
+                        variant="default"
+                    >
+                        <motion.div
+                            initial={false}
+                            animate={{ x: isAdding ? 20 : 0, opacity: isAdding ? 0 : 1 }}
+                            className="flex items-center justify-center gap-2"
+                        >
+                            <ShoppingCart className="h-4 w-4" />
+                            Add to Cart
+                        </motion.div>
+                        {isAdding && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="absolute inset-0 flex items-center justify-center"
+                            >
+                                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            </motion.div>
+                        )}
+                    </Button>
+                </CardFooter>
+            </Card>
+        </motion.div>
     );
 }
