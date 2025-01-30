@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash, CheckCircle, Plus, Minus, ShoppingCart } from "lucide-react";
-import axios from "axios"; // Import axios for making API calls
 import { Skeleton } from "@/components/ui/skeleton";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -71,12 +70,10 @@ function CheckoutForm({ total }: { total: string }) {
 }
 
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>([]); // Initialize state as an empty array
-  const [loading, setLoading] = useState<boolean>(true); // Loading state to show a loading indicator
-  const [error, setError] = useState<string | null>(null); // Error state to handle any errors
-  const [trackingInfo, setTrackingInfo] = useState<{ trackingNumber: string; courierCode: string } | null>(null); // New state for tracking info
-
-  // Fetch cart data from the backend on component mount  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
 
   useEffect(() => {
@@ -107,46 +104,27 @@ export default function CartPage() {
     ));
   };
 
-  // Function to decrease the quantity of an item
-  const handleDecreaseQuantity = (productId: number) => {
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.productId === productId && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1, totalPrice: (parseFloat(item.totalPrice) / item.quantity) * (item.quantity - 1) + "" }
-          : item
-      )
-    );
-  };
+  const calculateTotal = () =>
+    items.reduce((total, item) => total + parseFloat(item.totalPrice), 0).toFixed(2);
 
-  // Function to calculate the total price of items in the cart
-  const calculateTotal = () => {
-    return items
-      .reduce((total, item) => total + parseFloat(item.totalPrice), 0)
-      .toFixed(2); // Sum all totalPrices and round to 2 decimal places
-  };
-
-  // Function to confirm the order and create the tracking info
-  const handleConfirmOrder = async () => {
+  const handleCheckout = async () => {
+    setIsProcessingCheckout(true);
     try {
-      // Place the order by calling the /place-order API with user_id
-      const orderResponse = await axios.post("http://127.0.0.1:8000/place-order/", {
-            userId: 2, // Replace with the actual user ID
+      const totalAmount = parseFloat(calculateTotal()) * 100;
+      const response = await fetch("http://localhost:3001/create-payment-intent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount: totalAmount }),
       });
-
-      if (orderResponse.status === 201) {
-        // Order placed successfully, now create the tracking info
-        const trackingResponse = await axios.post("http://127.0.0.1:8000/create-tracking/");
-
-        if (trackingResponse.status === 200) {
-          const { tracking_number, courier_code } = trackingResponse.data.data;
-          setTrackingInfo({ trackingNumber: tracking_number, courierCode: courier_code });
-        }
-      }
+      const data = await response.json();
+      setClientSecret(data.clientSecret);
     } catch (error) {
-      console.error("Error during order confirmation:", error);
-      alert("There was an error confirming your order. Please try again.");
+      setError("Failed to initialize payment. Please try again.");
+    } finally {
+      setIsProcessingCheckout(false);
     }
-    setItems([]); // Clear the cart after confirming the order
   };
 
   return (
@@ -289,13 +267,7 @@ export default function CartPage() {
           )}
         </motion.div>
       )}
-      {trackingInfo && (
-        <div className="mt-6 text-center text-white">
-          <h2 className="text-2xl font-semibold">Order Confirmed</h2>
-          <p className="mt-2">Tracking Number: {trackingInfo.trackingNumber}</p>
-          <p>Courier: {trackingInfo.courierCode}</p>
-        </div>
-      )}
     </motion.div>
   );
 }
+
