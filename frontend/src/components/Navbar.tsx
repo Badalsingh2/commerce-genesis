@@ -133,6 +133,13 @@ export default function Navbar() {
                 <Button
                   variant="ghost"
                   className="hover:bg-primary/10"
+                  onClick={() => router.push(`/cart`)}
+                >
+                  Cart
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="hover:bg-primary/10"
                   onClick={() => router.push(`/${selectedRole}`)}
                 >
                   Go To Dashboard
