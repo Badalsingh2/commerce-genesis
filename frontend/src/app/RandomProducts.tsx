@@ -1,13 +1,15 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Product, Products } from "@/lib/types";
-import ProductCompo from "@/components/ProductCompo";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Products() {
   const [products, setProducts] = useState<Products>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -29,31 +31,52 @@ export default function Products() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Random Products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <Skeleton key={index} className="h-64 w-full rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div className="text-red-500 text-center mt-8">{error}</div>;
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Random Products</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <ProductCompo key={product.id} {...product} />
-        ))}
+        <AnimatePresence>
+          {products.map((product) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">{product.title}</CardTitle>
+                  <CardDescription className="text-gray-700">${product.mrp}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <img
+                    src={product.image_links || "https://via.placeholder.com/150"}
+                    alt={product.title}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
-    </div>
-  );
-}
-
-// Ensure the component name matches and exists
-function ProductCard({ id, title, mrp }) {
-  return (
-    <div className="p-4 border rounded-lg shadow">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="text-gray-700">${mrp}</p>
     </div>
   );
 }
