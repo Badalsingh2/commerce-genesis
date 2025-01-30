@@ -11,7 +11,7 @@ import { ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 
 export default function Products() {
     const [products, setProducts] = useState<Products>([]);
@@ -29,7 +29,7 @@ export default function Products() {
                     withCredentials: true,
                 });
 
-                const fetchedProducts = response.data.products.slice(0, 10);
+                const fetchedProducts = response.data.products.slice(1, 12);
                 setProducts(fetchedProducts);
 
                 fetchedProducts.forEach((product: Product) => {
@@ -136,7 +136,7 @@ export default function Products() {
                         <h3 className="text-lg font-semibold mt-2">{title}</h3>
                         <p className="text-gray-700">MRP: ₹{mrp}</p>
                         <p className="text-blue-600">
-                            Predicted Price: {predictedPrices[id] ? `₹${predictedPrices[id]}` : "Loading..."}
+                            Dynamic Pricing: {predictedPrices[id] ? `₹${predictedPrices[id]}` : "Loading..."}
                         </p>
                         <CardFooter className="p-4 pt-0">
                             <Button

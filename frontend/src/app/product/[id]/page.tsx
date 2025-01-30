@@ -105,7 +105,7 @@ export default function ProductDetailPage() {
                 },
                 body: JSON.stringify({ comments: concatenatedComments }), // Send concatenated comments
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 if (data.summarized_comments) {
@@ -320,10 +320,16 @@ export default function ProductDetailPage() {
 
                     <p className="text-muted-foreground">{product.description}</p>
 
-                    <Button className="w-fit">
-                        <ShoppingCart className="mr-2" size={20} />
-                        Add to Cart
-                    </Button>
+                    <div className="flex m-5 space-x-7">
+                        <Button className="w-fit">
+                            <ShoppingCart className="mr-2" size={20} />
+                            Add to Cart
+                        </Button>
+                        <Button onClick={() => alert('ar button clicked')}
+                        >
+                            ar
+                        </Button>
+                    </div>
                 </div>
             </div>
 

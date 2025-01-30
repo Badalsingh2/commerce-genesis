@@ -905,3 +905,7 @@ def get_tracking_status(request):
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+
+# Latitude: 19.9975° N
+# Longitude: 73.7898° E

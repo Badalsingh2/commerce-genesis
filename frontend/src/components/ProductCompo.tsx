@@ -92,7 +92,7 @@ export default function ProductCompo({
                             />
                         </motion.div>
                         {discountPercentage && (
-                            <Badge 
+                            <Badge
                                 className="absolute top-2 right-2 bg-green-500 hover:bg-green-600"
                             >
                                 {discountPercentage}% OFF
@@ -104,7 +104,7 @@ export default function ProductCompo({
                         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
                             {title}
                         </h3>
-                        
+
                         <div className="flex items-center space-x-1 mb-3">
                             <div className="flex items-center bg-green-50 px-2 py-1 rounded-full">
                                 <StarIcon className="h-4 w-4 text-green-500 fill-green-500" />
@@ -122,11 +122,11 @@ export default function ProductCompo({
 
                         <div className="flex items-baseline gap-2 mb-3">
                             <span className="text-2xl font-bold text-gray-900">
-                                ${selling_price}
+                                {selling_price}
                             </span>
                             {mrp && selling_price < mrp && (
                                 <span className="text-sm text-gray-500 line-through">
-                                    ${mrp}
+                                    {mrp}
                                 </span>
                             )}
                         </div>
@@ -134,7 +134,7 @@ export default function ProductCompo({
                 </Link>
 
                 <CardFooter className="p-4 pt-0">
-                    <Button 
+                    <Button
                         className="w-full group relative"
                         onClick={handleAddToCart}
                         disabled={isAdding}
@@ -157,6 +157,13 @@ export default function ProductCompo({
                                 <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             </motion.div>
                         )}
+                    </Button>
+                    <Button
+                        className="w-auto ml-2"
+                        variant="outline"
+                        onClick={() => alert('ar button clicked')}
+                    >
+                        ar
                     </Button>
                 </CardFooter>
             </Card>

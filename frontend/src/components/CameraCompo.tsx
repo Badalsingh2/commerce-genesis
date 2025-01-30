@@ -124,50 +124,57 @@ const CameraCompo = () => {
   }
 
   const handleUpload = async () => {
-    if (!selectedImage) return
-
-    setIsLoading(true)
+    if (!selectedImage) return;
+  
+    setIsLoading(true);
     try {
       // Convert base64 to blob
-      const base64Data = selectedImage.split(',')[1]
-      const byteCharacters = atob(base64Data)
-      const byteArrays = []
-
+      const base64Data = selectedImage.split(',')[1];
+      const byteCharacters = atob(base64Data);
+      const byteArrays = [];
+  
       for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-        const slice = byteCharacters.slice(offset, offset + 512)
-        const byteNumbers = new Array(slice.length)
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = new Array(slice.length);
         for (let i = 0; i < slice.length; i++) {
-          byteNumbers[i] = slice.charCodeAt(i)
+          byteNumbers[i] = slice.charCodeAt(i);
         }
-        const byteArray = new Uint8Array(byteNumbers)
-        byteArrays.push(byteArray)
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
       }
-
-      const blob = new Blob(byteArrays, { type: 'image/jpeg' })
-      const file = new File([blob], 'image.jpg', { type: 'image/jpeg' })
-
-      const formData = new FormData()
-      formData.append('file', file)
-
+  
+      const blob = new Blob(byteArrays, { type: 'image/jpeg' });
+      const file = new File([blob], 'image.jpg', { type: 'image/jpeg' });
+  
+      const formData = new FormData();
+      formData.append('file', file);
+  
       const response = await fetch('http://127.0.0.1:8000/upload/', {
         method: 'POST',
         body: formData,
-      })
-
+      });
+  
       if (response.ok) {
-        const result = await response.json()
-        console.log('Upload successful:', result)
-        setOpen(false)
+        const result = await response.json();
+        console.log('Upload successful:', result);
+  
+        // Print the response
+        console.log("Server Response:", result);
+  
+        // Optionally, display the response in the UI
+        alert(`Upload successful! Label: ${result.label}, Image URL: ${result.image_url}`);
+  
+        setOpen(false);
       } else {
-        throw new Error(`Upload failed: ${response.statusText}`)
+        throw new Error(`Upload failed: ${response.statusText}`);
       }
     } catch (error) {
-      console.error('Error uploading image:', error)
-      alert('Failed to upload image. Please try again.')
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleRemoveImage = () => {
     setSelectedImage(null)
@@ -186,7 +193,7 @@ const CameraCompo = () => {
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Upload Image</DialogTitle>
+            <DialogTitle className="text-center text-xl font-semibold">Upload or Capture Image</DialogTitle>
           </DialogHeader>
           <Tabs
             defaultValue="camera"
@@ -197,18 +204,22 @@ const CameraCompo = () => {
             }}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="camera">Camera</TabsTrigger>
-              <TabsTrigger value="upload">Upload</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg">
+              <TabsTrigger value="camera" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                Camera
+              </TabsTrigger>
+              <TabsTrigger value="upload" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                Upload
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="camera" className="mt-4">
-              <div className="relative aspect-video">
+              <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden">
                 {!selectedImage ? (
                   <>
                     <video
                       ref={videoRef}
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full h-full object-cover"
                       autoPlay
                       playsInline
                       muted
@@ -220,12 +231,12 @@ const CameraCompo = () => {
                     <img
                       src={selectedImage}
                       alt="Captured"
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full h-full object-cover"
                     />
                     <Button
                       size="icon"
                       variant="secondary"
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 bg-white/80 hover:bg-white/90"
                       onClick={handleRemoveImage}
                     >
                       <X className="h-4 w-4" />
@@ -236,7 +247,7 @@ const CameraCompo = () => {
               {!selectedImage ? (
                 <Button
                   onClick={captureImage}
-                  className="w-full mt-4"
+                  className="w-full mt-4 bg-primary hover:bg-primary/90 text-white"
                   disabled={isLoading || cameraPermission !== 'granted'}
                 >
                   {isLoading ? 'Starting Camera...' : 'Capture Image'}
@@ -244,7 +255,7 @@ const CameraCompo = () => {
               ) : (
                 <Button
                   onClick={handleUpload}
-                  className="w-full mt-4"
+                  className="w-full mt-4 bg-primary hover:bg-primary/90 text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Uploading...' : 'Upload Image'}
@@ -256,7 +267,7 @@ const CameraCompo = () => {
               {!selectedImage ? (
                 <div className="flex flex-col items-center justify-center gap-4">
                   <label className="w-full">
-                    <div className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
+                    <div className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                       <Upload className="w-8 h-8 mb-2 text-gray-500" />
                       <p className="text-sm text-gray-500">Click to upload or drag and drop</p>
                     </div>
@@ -278,14 +289,14 @@ const CameraCompo = () => {
                   <Button
                     size="icon"
                     variant="secondary"
-                    className="absolute top-2 right-2"
+                    className="absolute top-2 right-2 bg-white/80 hover:bg-white/90"
                     onClick={handleRemoveImage}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                   <Button
                     onClick={handleUpload}
-                    className="w-full mt-4"
+                    className="w-full mt-4 bg-primary hover:bg-primary/90 text-white"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Uploading...' : 'Upload Image'}
