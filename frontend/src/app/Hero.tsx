@@ -13,10 +13,10 @@ export default function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col-reverse md:flex-row items-center justify-between">
         <div className="text-center md:text-left">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-primary">
-            Fresh Food
+            Fast Delivery
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            Optimizing Local Freshness Minimizing Global Footprint
+            Optimizing Quality and Minimizing Global Footprint
           </p>
           <div className="flex flex-col justify-center items-center md:items-start">
             <SearchBar />

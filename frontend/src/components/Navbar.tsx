@@ -4,12 +4,11 @@ import { ModeToggle } from "./ModeToggle";
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import Script from "next/script";
 import { useEffect, useState } from "react";
-import { setCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Button } from "./ui/button";
-import { ShoppingCartIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function Navbar() {
   const router = useRouter();
@@ -17,6 +16,13 @@ export default function Navbar() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   useEffect(() => {
+    // Get the stored role when the component mounts
+    const storedRole = getCookie("role") as string | null;
+    if (storedRole) {
+      setSelectedRole(storedRole);
+    }
+
+    // Google Translate Init
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement(
         {
@@ -31,7 +37,15 @@ export default function Navbar() {
 
   const setSelection = (role: string) => {
     setSelectedRole(role);
-    setCookie("role", role, { maxAge: 60 * 60 * 24 });
+    setCookie("role", role, { maxAge: 60 * 60 * 24 }); // Store role in cookie
+  };
+
+  const handleDashboardRedirect = () => {
+    if (selectedRole === "vendor") {
+      router.push("/vendor/1");
+    } else {
+      router.push("/customer/1"); // Default customer ID (You can make this dynamic)
+    }
   };
 
   if (!isLoaded) {
@@ -49,77 +63,47 @@ export default function Navbar() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
         {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
           <Link href="/" className="text-2xl font-bold text-primary hover:text-foreground transition-colors">
-            Foodie
+            E-Mart
           </Link>
         </motion.div>
 
         {/* Right Side */}
         <div className="flex items-center gap-4">
           {/* Google Translate */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
             <div id="google_translate_element" className="translate-container"></div>
           </motion.div>
 
           {/* Theme Toggle */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
             <ModeToggle />
           </motion.div>
 
           {/* Auth Buttons */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.6 }}>
             <SignedOut>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="hover:bg-primary/10">
-                    Sign In
-                  </Button>
+                  <Button variant="outline" className="hover:bg-primary/10">Sign In</Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-60 p-4 bg-background/90 backdrop-blur-md border border-border/50">
                   <div className="flex flex-col gap-2">
                     <SignInButton mode="modal">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start hover:bg-primary/10"
-                        onClick={() => setSelection("customer")}
-                      >
+                      <Button variant="ghost" className="w-full justify-start hover:bg-primary/10" onClick={() => setSelection("customer")}>
                         Sign in as Customer
                       </Button>
                     </SignInButton>
 
                     <SignInButton mode="modal">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start hover:bg-primary/10"
-                        onClick={() => setSelection("vendor")}
-                      >
+                      <Button variant="ghost" className="w-full justify-start hover:bg-primary/10" onClick={() => setSelection("vendor")}>
                         Sign in as Vendor
                       </Button>
                     </SignInButton>
 
                     <SignInButton mode="modal">
-                      <Button
-                        variant="default"
-                        className="w-full justify-start bg-primary hover:bg-primary/90"
-                        onClick={() => setSelection("admin")}
-                      >
+                      <Button variant="default" className="w-full justify-start bg-primary hover:bg-primary/90" onClick={() => setSelection("admin")}>
                         Sign in as Admin
                       </Button>
                     </SignInButton>
@@ -130,11 +114,7 @@ export default function Navbar() {
 
             <SignedIn>
               <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  className="hover:bg-primary/10"
-                  onClick={() => router.push(`/${selectedRole}`)}
-                >
+                <Button variant="ghost" className="hover:bg-primary/10" onClick={handleDashboardRedirect}>
                   Go To Dashboard
                 </Button>
                 <UserButton />
