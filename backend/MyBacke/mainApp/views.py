@@ -28,6 +28,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 import os
 from django.db.models import Q
 import stripe
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+import google.generativeai as genai
+import json
+
 # Create your views here.
 
 
@@ -768,3 +773,50 @@ def create_payment_intent(request):
         return JsonResponse({
             'clientSecret': payment_intent['client_secret']
         })
+    
+
+@csrf_exempt
+def get_product_info(request):
+    if request.method == 'POST':
+        try:
+            # Parse the JSON data from the request body
+            data = json.loads(request.body)
+            product_title = data.get('product_title')
+            
+            if not product_title:
+                return JsonResponse({'error': 'Product title is required'}, status=400)
+
+            # Configure the Gemini API (replace the API key with your actual key)
+            genai.configure(api_key="AIzaSyBb8jJEBqufX-rp9BVy-g2SWzymLixKgm8")
+
+            # Create the model
+            generation_config = {
+                "temperature": 1,
+                "top_p": 0.95,
+                "top_k": 40,
+                "max_output_tokens": 8192,
+                "response_mime_type": "text/plain",
+            }
+
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash-8b",
+                generation_config=generation_config,
+            )
+
+            # Start chat session with model
+            chat_session = model.start_chat(history=[])
+
+            # Create the message for the model
+            message = f"must Provide a list of eco-friendly alternatives  and the harmfulness of the following product: {product_title}. Also, suggest what can be done to make it better in one line. provide in plane text format"
+            
+            # Send message to the model and get response
+            response = chat_session.send_message(message)
+            data = response.text
+
+            # Return the response data as JSON
+            return JsonResponse({'suggestions': data})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Invalid request method, POST required'}, status=405)
