@@ -16,16 +16,22 @@ const App = () => {
   const navigate = useNavigate();
 
   const handleModelSelection = (model) => {
-    setSelectedModel(model);
-    navigate(`/5167/${model.name.toLowerCase()}`);
+    if (model && model.name) {
+      setSelectedModel(model);
+      navigate(`/5167/${model.name.toLowerCase()}`);
+    } else {
+      console.error("Invalid model or model name");
+    }
   };
 
   useEffect(() => {
     const pathParts = location.pathname.split("/");
     const modelName = pathParts[pathParts.length - 1];
-    const model = models.find((m) => m.name.toLowerCase() === modelName);
-    if (model) {
-      setSelectedModel(model);
+    if (modelName) {
+      const model = models.find((m) => m.name && m.name.toLowerCase() === modelName.toLowerCase());
+      if (model) {
+        setSelectedModel(model);
+      }
     }
   }, [location]);
 
@@ -100,6 +106,72 @@ const App = () => {
                 model.position.z
               );
               scene.add(pointLight);
+
+              // Add touch event listeners for rotation and scaling
+              let touchStartDistance = 0;
+              let initialScale = model.scale.clone();
+              let touchStartAngle = 0;
+              let initialRotation = model.rotation.y;
+
+              const handleTouchStart = (event) => {
+                if (event.touches.length === 2) {
+                  // Calculate initial distance between two touches
+                  touchStartDistance = Math.hypot(
+                    event.touches[0].clientX - event.touches[1].clientX,
+                    event.touches[0].clientY - event.touches[1].clientY
+                  );
+                  // Calculate initial angle between two touches
+                  touchStartAngle = Math.atan2(
+                    event.touches[1].clientY - event.touches[0].clientY,
+                    event.touches[1].clientX - event.touches[0].clientX
+                  );
+                }
+              };
+
+              const handleTouchMove = (event) => {
+                if (event.touches.length === 2 && modelRef.current) {
+                  // Calculate current distance between two touches
+                  const touchEndDistance = Math.hypot(
+                    event.touches[0].clientX - event.touches[1].clientX,
+                    event.touches[0].clientY - event.touches[1].clientY
+                  );
+                  // Calculate scale factor
+                  const scaleFactor = touchEndDistance / touchStartDistance;
+                  modelRef.current.scale.set(
+                    initialScale.x * scaleFactor,
+                    initialScale.y * scaleFactor,
+                    initialScale.z * scaleFactor
+                  );
+
+                  // Calculate current angle between two touches
+                  const touchEndAngle = Math.atan2(
+                    event.touches[1].clientY - event.touches[0].clientY,
+                    event.touches[1].clientX - event.touches[0].clientX
+                  );
+                  // Calculate rotation delta
+                  const rotationDelta = touchEndAngle - touchStartAngle;
+                  modelRef.current.rotation.y = initialRotation + rotationDelta;
+                }
+              };
+
+              const handleTouchEnd = () => {
+                // Update initial scale and rotation for the next gesture
+                if (modelRef.current) {
+                  initialScale = modelRef.current.scale.clone();
+                  initialRotation = modelRef.current.rotation.y;
+                }
+              };
+
+              window.addEventListener("touchstart", handleTouchStart);
+              window.addEventListener("touchmove", handleTouchMove);
+              window.addEventListener("touchend", handleTouchEnd);
+
+              // Cleanup event listeners on component unmount
+              return () => {
+                window.removeEventListener("touchstart", handleTouchStart);
+                window.removeEventListener("touchmove", handleTouchMove);
+                window.removeEventListener("touchend", handleTouchEnd);
+              };
             },
             undefined,
             (error) => console.error("Error loading model:", error)

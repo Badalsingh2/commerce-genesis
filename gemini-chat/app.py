@@ -86,8 +86,7 @@ def process_image():
         model = genai.GenerativeModel(model_name="gemini-1.5-pro")
 
         # Prepare the prompt
-
-        prompt = "What is the name of the product in this image? Only give the name of the product nothing else, not even the brand name just the product like mouse, headset, etc."
+        prompt = "What is the category of the product in this image? Only give the name of the product nothing else"
         print("Prompt prepared.")
 
         # Send the image and prompt to Gemini

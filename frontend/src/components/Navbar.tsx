@@ -114,6 +114,13 @@ export default function Navbar() {
 
             <SignedIn>
               <div className="flex items-center gap-4">
+              <Button
+                  variant="ghost"
+                  className="hover:bg-primary/10"
+                  onClick={() => router.push(`/fake-det`)}
+                >
+                  Fake Product Detection
+                </Button>
                 <Button
                   variant="ghost"
                   className="hover:bg-primary/10"

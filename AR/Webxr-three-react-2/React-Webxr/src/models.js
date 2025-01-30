@@ -3,6 +3,7 @@ export const models = [
     { name: "Sofa", path: "/assets/sofa.glb" },
     { name: "Bed", path: "/assets/bed.glb" },
     { name: "Computer", path: "/assets/computer.glb" },
-    { name: "Bat", path: "/assets/cricket_bat.glb"}
+    { name: "Bat", path: "/assets/bat_2.glb"},
+    { name: "tv", path: "/assets/tv.glb"},
   ];
   

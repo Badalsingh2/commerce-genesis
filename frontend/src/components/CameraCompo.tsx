@@ -6,7 +6,7 @@ import { Camera, Upload, X } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const CameraCompo = () => {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
   const [activeTab, setActiveTab] = useState('camera')
   const [cameraPermission, setCameraPermission] = useState<PermissionState>('prompt')
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
