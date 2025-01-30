@@ -820,3 +820,88 @@ def get_product_info(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Invalid request method, POST required'}, status=405)
+import random
+import string
+import requests
+
+
+def generate_tracking_number(length=20):
+    # Generate a random string of digits and letters
+    characters = string.ascii_uppercase + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
+
+@csrf_exempt  # Disable CSRF verification for this example (for testing purposes)
+def create_tracking(request):
+    if request.method == 'POST':
+        # Generate a random tracking number
+        tracking_number = generate_tracking_number()
+        courier_code = 'usps'  # Default courier code (you can modify this as needed)
+        
+        # TrackingMore API URL and headers
+        url = "https://api.trackingmore.com/v4/trackings/create"
+        headers = {
+            "Tracking-Api-Key": "2mr04weu-u89x-c4u5-k2xe-fwzod2y23064",  # Replace with your API key
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "tracking_number": tracking_number,
+            "courier_code": courier_code
+        }
+
+        try:
+            response = requests.post(url, json=payload, headers=headers)
+            response_data = response.json()
+
+            if response.status_code == 200:
+                return JsonResponse(response_data, status=200)
+            else:
+                return JsonResponse({"error": "Failed to create tracking information", "details": response_data}, status=400)
+
+        except requests.exceptions.RequestException as e:
+            return JsonResponse({"error": f"Error with API request: {str(e)}"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+# Tracking Number: 0GP5TATHD50RWRS3NXLO
+
+# Courier: usps
+
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+# Your TrackingMore API Key
+TRACKING_API_KEY = "2mr04weu-u89x-c4u5-k2xe-fwzod2y23064"
+
+@csrf_exempt
+def get_tracking_status(request):
+    if request.method == 'POST':
+        try:
+            # Parse the JSON data from the request
+            data = json.loads(request.body)
+            tracking_number = data.get('tracking_number')
+            
+            if not tracking_number:
+                return JsonResponse({'error': 'Tracking number is required'}, status=400)
+
+            # Example TrackingMore API URL
+            tracking_url = f"https://api.trackingmore.com/v4/trackings/get?tracking_numbers={tracking_number}"
+
+            # Headers for API request
+            headers = {
+                'Tracking-Api-Key': '2mr04weu-u89x-c4u5-k2xe-fwzod2y23064',  # Replace with actual API key
+                'Content-Type': 'application/json'
+            }
+
+            # Making GET request to TrackingMore API
+            response = requests.get(tracking_url, headers=headers)
+
+            if response.status_code == 200:
+                return JsonResponse(response.json())
+            else:
+                return JsonResponse({'error': 'Failed to get tracking data'}, status=response.status_code)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

@@ -47,6 +47,8 @@ urlpatterns = [
     path('search/', views.search_products, name='search_products'),
     path('payment/',views.create_payment_intent,name='payment_intent'),
     path('eco/', views.get_product_info, name='eco-friendly-alternatives'),
+    path('create-tracking/', views.create_tracking, name='create_tracking'),
+    path('get-tracking-status/', views.get_tracking_status, name='get_tracking_status'),
 
 ]
 if settings.DEBUG:
