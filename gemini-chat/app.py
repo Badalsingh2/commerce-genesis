@@ -11,11 +11,11 @@ app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
 
 # Set up Gemini API
-genai.configure(api_key="AIzaSyDL8f2m-v0KaW1ZOB7mszaPuPZ-_A5Q-fY")
+genai.configure(api_key="AIzaSyBWDDYP8BVH3689jdIJ08jL_Y-RAQsq3No")
 
 # Function to generate response using Gemini API
 def get_gemini_response(text):
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel("gemini-1.5-flash-8b")
     response = model.generate_content(text)
     return response.text
 
@@ -33,6 +33,23 @@ def chat():
     response_text = get_gemini_response(user_input)
     print(response_text)
     return jsonify({"response": response_text})
+
+
+@app.route("/eco", methods=["POST"])
+def eco():
+    data = request.json
+    print(data)
+    product_title = data.get("product_title")
+    print(product_title)
+
+    prompt = f"must Provide a list of eco-friendly alternatives  and the harmfulness of the following product: {product_title}. Also, suggest what can be done to make it better in one line. provide in plane text format"
+    
+    if not product_title:
+        return jsonify({"error": "No text input provided"}), 400
+
+    response_text = get_gemini_response(prompt)
+    print(response_text)
+    return jsonify({"suggestions": response_text})
 
 @app.route('/image', methods=['POST'])
 def process_image():
@@ -69,7 +86,8 @@ def process_image():
         model = genai.GenerativeModel(model_name="gemini-1.5-pro")
 
         # Prepare the prompt
-        prompt = "What is the name of the product in this image? Only give the name of the product nothing else"
+
+        prompt = "What is the name of the product in this image? Only give the name of the product nothing else, not even the brand name just the product like mouse, headset, etc."
         print("Prompt prepared.")
 
         # Send the image and prompt to Gemini
