@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
 
 # Set up Gemini API
-genai.configure(api_key="AIzaSyD3WpBuyiuLUNlmGefFyxBcgkIVTOXWijo")
+genai.configure(api_key="AIzaSyDL8f2m-v0KaW1ZOB7mszaPuPZ-_A5Q-fY")
 
 # Function to generate response using Gemini API
 def get_gemini_response(text):
