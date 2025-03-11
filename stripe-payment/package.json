@@ -4,10 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "bun bunserver.ts"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^3.1.1",
