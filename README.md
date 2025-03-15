@@ -45,7 +45,6 @@ This repository contains the complete codebase for Commerce Genesis, a next-gene
 ### Backend
 - Django REST framework for robust API endpoints
 - SQLite database (configured for demonstration purposes)
-- FastAPI microservices for specific high-performance needs
 - Trained machine learning models for dynamic pricing
 
 ### AR Integration
