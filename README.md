@@ -68,7 +68,6 @@ The repository is organized into focused modules:
 commerce-genesis/
 ├── AR/                      # Augmented Reality implementation
 ├── backend/                 # Django REST API with ML models
-├── FastApi/                 # High-performance microservices
 ├── frontend/                # Next.js application with UI components
 ├── gemini-chat/             # AI chatbot integration
 ├── stripe-payment/          # Payment processing service
