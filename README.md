@@ -2,6 +2,8 @@
 
 Commerce Genesis is an advanced eCommerce platform that successfully integrates generative AI tools with full-stack web technologies to enhance the shopping experience. This completed project combines AI-driven features with modern eCommerce functionality, delivering optimal performance and reliability.
 
+![Banner](./assets/banner.avif)
+
 ## Contributors
 - [Vivian Ludrick](https://github.com/vivalchemy)
 - [Ronit Naik](https://github.com/RonitNaik122)
@@ -13,6 +15,8 @@ This repository contains the complete codebase for Commerce Genesis, a next-gene
 
 ## Implemented Features
 
+![Key Features](./assets/key_features.avif)
+
 ### Core Functionality
 - ✅ **Generative AI Integration** - AI-powered product recommendations and content generation
 - ✅ **Personalized Marketing** - Tailored product suggestions based on user behavior
@@ -21,6 +25,9 @@ This repository contains the complete codebase for Commerce Genesis, a next-gene
 - ✅ **Payment Gateway** - Integrated payment processing via Stripe
 - ✅ **Chatbot for Customer Assistance** - AI-powered customer support
 - ✅ **Dynamic Pricing & Data Analytics** - Intelligent pricing adjustments based on market trends
+
+![Usp1](./assets/usp-1.avif)
+![Usp2](./assets/usp-2.avif)
 
 ### Enhanced Capabilities
 - ✅ **Augmented Reality (AR)** - Virtual product previews in real environments
@@ -35,6 +42,8 @@ This repository contains the complete codebase for Commerce Genesis, a next-gene
 - ✅ **Fake Product Detection** - Counterfeit identification system (YOLO)
 
 ## Technology Stack
+
+![Technology Stack](./assets/tech_stack.avif)
 
 ### Frontend
 - Next.js with TypeScript
@@ -81,43 +90,30 @@ For showcase purposes, follow these steps to run a complete demo:
 1. Clone the repository
 2. Start the backend service:
    ```bash
-   cd backend/MyBacke
+   cd backend
+   pip install -r requirements.txt
+   cd MyBacke
    python manage.py runserver
    ```
-3. Launch the frontend application:
+3. Start the chatbot service:
+   ```bash
+   cd gemini-chat
+   pip install -r requirements.txt
+   python manage.py runserver
+   ```
+4. Launch the frontend application:
    ```bash
    cd frontend
    npm run build
    npm start
    ```
-4. Initialize the AR component (optional):
+5. Initialize the AR component (optional):
    ```bash
    cd AR/Webxr-three-react-2/React-Webxr
    npm start
    ```
-
-### Feature-Specific Demos
-
-#### AI Recommendation Demo
-```bash
-cd backend/MyBacke
-python manage.py runserver
-# Navigate to /product/{id} on the frontend
-```
-
-#### AR Product Visualization
-```bash
-cd AR/Webxr-three-react-2/React-Webxr
-npm start
-# Access via mobile device with AR capabilities
-```
-
-#### Payment Processing
-```bash
-cd stripe-payment
-npm run dev
-# Test payments with Stripe test credentials
-```
+6. Load the chrome extension (optional):
+Refer to [this](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked) section of the tutorial to load the chrome extension
 
 ## Key Implementation Highlights
 
